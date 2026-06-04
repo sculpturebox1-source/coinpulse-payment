@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CoinPulse Pro — Upgrade</title>
+  <style>
+    :root { --bg:#0e1117; --panel:rgba(22,27,36,0.95); --border:rgba(255,255,255,0.08); --text:#f3f4f6; --muted:rgba(243,244,246,0.55); --accent:#f7931a; --up:#4ade80; --down:#f87171; --pro:#a78bfa; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 32px; max-width: 420px; width: 100%; }
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px rgba(247,147,26,0.7); }
+    h1 { font-size: 15px; text-transform: uppercase; letter-spacing: .18em; color: var(--muted); }
+    h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { font-size: 14px; color: var(--muted); margin-bottom: 28px; line-height: 1.6; }
+    .features { background: rgba(167,139,250,0.05); border: 1px solid rgba(167,139,250,0.2); border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+    .feature { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 5px 0; }
+    .feature span { color: var(--pro); font-size: 16px; }
+    .price-tag { text-align: center; margin-bottom: 24px; }
+    .price-tag .amount { font-size: 42px; font-weight: 800; color: #fff; }
+    .price-tag .note { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    button { width: 100%; padding: 14px; border-radius: 12px; border: none; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s; }
+    .btn-connect { background: var(--pro); color: #111; margin-bottom: 12px; }
+    .btn-connect:hover { filter: brightness(1.1); }
+    .btn-connect:disabled { opacity: 0.5; cursor: not-allowed; }
+    .wallet-info { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 12px; display: none; }
+    .wallet-info .addr { font-family: monospace; color: #fff; font-size: 13px; margin-top: 4px; }
+    .btn-pay { background: var(--accent); color: #111; display: none; }
+    .btn-pay:hover { filter: brightness(1.1); }
+    .btn-pay:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status { font-size: 12px; text-align: center; margin-top: 12px; min-height: 18px; color: var(--muted); }
+    .err { color: var(--down); } .ok { color: var(--up); }
+    .success { display: none; text-align: center; padding: 16px 0; }
+    .success .icon { font-size: 48px; margin-bottom: 12px; }
+    .success h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--up); }
+    .success p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .steps { display: flex; gap: 8px; margin-bottom: 20px; }
+    .step { flex: 1; text-align: center; font-size: 11px; color: var(--muted); padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
+    .step.active { border-color: var(--pro); color: var(--pro); background: rgba(167,139,250,0.08); }
+    .step.done { border-color: var(--up); color: var(--up); background: rgba(74,222,128,0.08); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="dot"></div>
+      <h1>CoinPulse Pro</h1>
+    </div>
+
+    <div id="mainContent">
+      <h2>Upgrade to Pro</h2>
+      <p class="subtitle">Track any cryptocurrency from CoinGecko directly in your browser. One payment, yours forever.</p>
+
+      <div class="features">
+        <div class="feature"><span>✓</span> Any crypto from CoinGecko</div>
+        <div class="feature"><span>✓</span> Instant price updates</div>
+        <div class="feature"><span>✓</span> Lifetime access</div>
+        <div class="feature"><span>✓</span> Secured by blockchain</div>
+      </div>
+
+      <div class="price-tag">
+        <div class="amount">$4</div>
+        <div class="note">USDT on Polygon · one-time payment</div>
+      </div>
+
+      <div class="steps">
+        <div class="step active" id="step1">1. Connect</div>
+        <div class="step" id="step2">2. Approve</div>
+        <div class="step" id="step3">3. Pay</div>
+      </div>
+
+      <div class="wallet-info" id="walletInfo">
+        <div style="color:var(--muted)">Connected wallet:</div>
+        <div class="addr" id="walletAddr"></div>
+      </div>
+
+      <button class="btn-connect" id="connectBtn">Connect MetaMask</button>
+      <button class="btn-pay" id="payBtn">Approve & Pay $4 USDT</button>
+      <div class="status" id="statusMsg"></div>
+    </div>
+
+    <div class="success" id="successContent">
+      <div class="icon">🎉</div>
+      <h3>Pro Unlocked!</h3>
+      <p>Your wallet is now registered on the blockchain.<br>Close this tab and enjoy CoinPulse Pro.</p>
+    </div>
+  </div>
+
+  <script>
+    const CONTRACT = "0x09F48363c078b7b78dc50aec3D566914Fa2553f7";
+    const USDT = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
+    const POLYGON_CHAIN_ID = "0x89";
+    const PRICE = "4000000";
+
+    let wallet = null;
+
+    function setStatus(msg, type = "") {
+      const el = document.getElementById("statusMsg");
+      el.textContent = msg;
+      el.className = "status " + type;
+    }
+
+    function setStep(n) {
+      [1,2,3].forEach(i => {
+        const el = document.getElementById("step" + i);
+        el.className = "step" + (i < n ? " done" : i === n ? " active" : "");
+      });
+    }
+
+    function encodeCheckPro(address) {
+      return "0x6e8e8a05" + address.toLowerCase().replace("0x","").padStart(64,"0");
+    }
+    function encodeApprove(spender, amount) {
+      return "0x095ea7b3" + spender.toLowerCase().replace("0x","").padStart(64,"0") + BigInt(amount).toString(16).padStart(64,"0");
+    }
+    function encodeUnlock() { return "0x2f6c493c"; }
+
+    async function switchToPolygon() {
+      try {
+        await ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: POLYGON_CHAIN_ID }] });
+      } catch (e) {
+        if (e.code === 4902) {
+          await ethereum.request({ method: "wallet_addEthereumChain", params: [{ chainId: POLYGON_CHAIN_ID, chainName: "Polygon Mainnet", nativeCurrency: { name: "POL", symbol: "POL", decimals: 18 }, rpcUrls: ["https://polygon-rpc.com/"], blockExplorerUrls: ["https://polygonscan.com/"] }] });
+        }
+      }
+    }
+
+    async function checkProOnChain(addr) {
+      const result = await ethereum.request({ method: "eth_call", params: [{ to: CONTRACT, data: encodeCheckPro(addr) }, "latest"] });
+      return result === "0x0000000000000000000000000000000000000000000000000000000000000001";
+    }
+
+    document.getElementById("connectBtn").addEventListener("click", async () => {
+      const btn = document.getElementById("connectBtn");
+      if (!window.ethereum) { setStatus("MetaMask not found. Please install it.", "err"); return; }
+      btn.textContent = "Connecting…"; btn.disabled = true;
+      try {
+        await switchToPolygon();
+        const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+        wallet = accounts[0];
+        document.getElementById("walletAddr").textContent = wallet;
+        document.getElementById("walletInfo").style.display = "block";
+
+        // Verificar si ya es Pro
+        const pro = await checkProOnChain(wallet);
+        if (pro) {
+          document.getElementById("successContent").style.display = "block";
+          document.getElementById("mainContent").style.display = "none";
+          // Notificar a la extensión
+          if (chrome?.runtime) chrome.runtime.sendMessage({ type: "COINPULSE_PRO_ACTIVATED", wallet });
+          return;
+        }
+
+        btn.style.display = "none";
+        document.getElementById("payBtn").style.display = "block";
+        setStep(2);
+        setStatus("Wallet connected. Ready to pay.");
+      } catch (e) {
+        setStatus("Connection failed.", "err");
+        btn.textContent = "Connect MetaMask"; btn.disabled = false;
+      }
+    });
+
+    document.getElementById("payBtn").addEventListener("click", async () => {
+      const btn = document.getElementById("payBtn");
+      btn.textContent = "Approving USDT…"; btn.disabled = true;
+      setStep(2);
+      setStatus("Step 1/2: Approve USDT in MetaMask…");
+      try {
+        await ethereum.request({ method: "eth_sendTransaction", params: [{ from: wallet, to: USDT, data: encodeApprove(CONTRACT, PRICE) }] });
+        setStep(3);
+        setStatus("Step 2/2: Confirm payment in MetaMask…");
+        btn.textContent = "Confirming payment…";
+        await new Promise(r => setTimeout(r, 2000));
+        await ethereum.request({ method: "eth_sendTransaction", params: [{ from: wallet, to: CONTRACT, data: encodeUnlock() }] });
+        setStatus("Waiting for confirmation…");
+
+        // Polling hasta confirmar
+        let tries = 0;
+        const poll = setInterval(async () => {
+          const confirmed = await checkProOnChain(wallet);
+          if (confirmed || tries++ > 24) {
+            clearInterval(poll);
+            if (confirmed) {
+              document.getElementById("successContent").style.display = "block";
+              document.getElementById("mainContent").style.display = "none";
+              if (chrome?.runtime) chrome.runtime.sendMessage({ type: "COINPULSE_PRO_ACTIVATED", wallet });
+            } else {
+              setStatus("Taking longer than expected. Check Polygonscan.", "");
+            }
+          }
+        }, 5000);
+      } catch (e) {
+        setStatus(e.code === 4001 ? "Transaction rejected." : "Error: " + (e.message || "Try again."), "err");
+        btn.textContent = "Approve & Pay $4 USDT"; btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
